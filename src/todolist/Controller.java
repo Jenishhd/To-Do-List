@@ -1,18 +1,22 @@
 package todolist;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import datamodel.TodoData;
 import datamodel.TodoItem;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TextArea;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 
 public class Controller {
 
@@ -30,34 +34,52 @@ public class Controller {
     private TextArea itemDetailsTextArea;
 
     @FXML
+    private BorderPane mainBorderPane;
+
+    @FXML
     private void initialize(){
-        TodoItem item1 = new TodoItem("Mail birthday card", "Buy a 30th birthday card for John",
-                LocalDate.of(2020, Month.FEBRUARY,6));
-        TodoItem item2 = new TodoItem("Doctor's Appointment","See Dr.Smith at 123 Main Street",
-                LocalDate.of(2020,Month.JANUARY,6));
-        TodoItem item3 = new TodoItem("Pick up dry cleaning", "The clothes will be ready soon",
-                LocalDate.of(2020,Month.JANUARY,11));
-
-        todoItems = new ArrayList<TodoItem>();
-        todoItems.add(item1);
-        todoItems.add(item2);
-        todoItems.add(item3);
-
         todoListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TodoItem>() {
             @Override
             public void changed(ObservableValue<? extends TodoItem> observable, TodoItem oldValue, TodoItem newValue) {
                 if(newValue != null){
                     TodoItem item = todoListView.getSelectionModel().getSelectedItem();
                     itemDetailsTextArea.setText(item.getDetails());
-                    DateTimeFormatter df = DateTimeFormatter.ofPattern("MMMM d, yyyy");
+                    DateTimeFormatter df = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
                     deadlineLabel.setText(df.format(item.getDeadline()));
                 }
             }
         });
 
-        todoListView.getItems().setAll(todoItems);
+        todoListView.getItems().setAll(TodoData.getInstance().getTodoItems());
         todoListView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         todoListView.getSelectionModel().selectFirst();
+
+    }
+
+    @FXML
+    public void showNewItemDialog(){
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.initOwner(mainBorderPane.getScene().getWindow());
+        try{
+            Parent root = FXMLLoader.load(getClass().getResource("todoItemDialog.fxml"));
+            dialog.getDialogPane().setContent(root);
+
+        } catch(IOException e){
+            System.out.println("Couldn't load the dialog");
+            e.printStackTrace();
+            return;
+        }
+
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if(result.isPresent() && result.get() == ButtonType.OK){
+            System.out.println("OK pressed");
+        } else{
+            System.out.println("Cancel pressed");
+        }
+
 
     }
 
