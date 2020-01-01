@@ -66,6 +66,7 @@ public class Controller {
         TodoItem item = todoListView.getSelectionModel().getSelectedItem();
         itemDetailsTextArea.setText(item.getDetails());
         deadlineLabel.setText(item.getDeadline().toString());
+        System.out.println("Hello");
 
 //        StringBuilder sb = new StringBuilder(item.getDetails());
 //        sb.append("\n\n\n");
